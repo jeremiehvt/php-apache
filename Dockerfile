@@ -1,10 +1,9 @@
 FROM php:7.3.6-apache
 
+ARG ADMIN_USER
+
 LABEL maintainer="jeremie_havart <jeremiehvt@gmail.com>" \
       description="image base on debian php 7.3.6 image with apache"
-
-
-ENV ADMIN_USER="havartjeremie"
 
 # copy work project files in container
 COPY --chown=1000:33 ./app/ /var/www/html/
@@ -37,7 +36,7 @@ RUN yes | pecl install xdebug \
     && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
 
-RUN useradd -g www-data -G sudo,root $ADMIN_USER
+RUN useradd -g www-data -G sudo,root ${ADMIN_USER}
 
 RUN a2enmod rewrite
 
