@@ -11,14 +11,12 @@ COPY --chown=1000:33 ./app/ /var/www/html/
 # copy apache configuration vhost file
 COPY ./apache_conf/localhost.conf /etc/apache2/sites-available/
 
-#load php.ini file
-COPY ./php-ini/php.ini /usr/local/etc/php
-
 # enable site configuration
 RUN a2ensite localhost.conf 
 
 # install some utilities and php add-ons
 RUN apt-get update
+#RUN apt-get upgrade
 RUN apt-get install -y nano \
 	               vim \
 		       sudo \
@@ -26,17 +24,21 @@ RUN apt-get install -y nano \
 		       libzip-dev \
 		       unzip \
 		       libmagickwand-dev --no-install-recommends \
-    		       zlib1g-dev \
-    		       libzip-dev   
+    		       zlib1g-dev 
 
 RUN pecl install imagick && docker-php-ext-enable imagick
+
+RUN docker-php-ext-install gd mbstring mysqli pdo pdo_mysql shmop zip 
 
 RUN yes | pecl install xdebug \
     && echo "zend_extension=$(find /usr/local/lib/php/extensions/ -name xdebug.so)" > /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_enable=on" >> /usr/local/etc/php/conf.d/xdebug.ini \
     && echo "xdebug.remote_autostart=off" >> /usr/local/etc/php/conf.d/xdebug.ini
 
-RUN useradd -g www-data -G sudo,root ${ADMIN_USER}
+RUN useradd -g www-data -G sudo,root -m ${ADMIN_USER}
+
+#load php.ini file
+COPY ./php-ini/php.ini /usr/local/etc/php
 
 RUN a2enmod rewrite
 
